@@ -1,12 +1,10 @@
 package org.bahmni.openerp.web.request.mapper;
 
-
+import java.util.Arrays;
+import java.util.List;
 import org.bahmni.openerp.web.request.OpenERPRequest;
 import org.bahmni.openerp.web.request.builder.Parameter;
 import org.bahmni.openerp.web.service.domain.Customer;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class OpenERPCustomerParameterMapper {
 

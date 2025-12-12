@@ -1,161 +1,272 @@
 package org.bahmni.feed.openerp.domain.encounter;
 
+// import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.Date;
 
+// @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OpenERPOrder {
-    private String orderId;
-    private String previousOrderId;
-    private String encounterId;
-    private String productId;
-    private String productName;
-    private Double quantity;
-    private String quantityUnits;
-    private String action;
-    private String visitId;
-    private String visitType;
-    private String type;
-    private String description;
-    private boolean voided;
-    private String locationName;
-    private String providerName;
-    private String dispensed;
-    private String conceptName;
-    private Date dateCreated;
 
+  private String orderId;
+  private String previousOrderId;
+  private String encounterId;
+  private String productId;
+  private String productName;
+  private Double quantity;
+  private String quantityUnits;
+  private String action;
+  private String visitId;
+  private String visitType;
+  private String type;
+  private String description;
+  private boolean voided;
+  private String locationName;
+  private String providerName;
+  private String dispensed;
+  private String conceptName;
+  private Date dateCreated;
+  // new fields
+  // private String dosage; // Combined "5 mg" or "500 mg"
+  private String dose; // Just "5" or "500"
+  private String doseUnits; // Just "mg"
+  private String frequency; // "BID", "TID", "QD", etc.
+  private String route; // "Oral", "IV", "Topical", etc.
+  // private String dosingInstructions; // Free text instructions
+  private String duration; // "7"
+  private String durationUnits;
+  private Integer numRefills;
+  private String asNeeded;
+  private String administrationInstructions;
 
-    public String getEncounterId() {
-        return encounterId;
-    }
+  // //new getters and setters
+  // public String getDosage() {
+  //   return dosage
+  // }
 
-    public void setEncounterId(String encounterId) {
-        this.encounterId = encounterId;
-    }
+  // public void setDosage(String dosage) {
+  //   this.dosage = dosage;
+  // }
 
-    public void setVisitId(String visitId) {
-        this.visitId = visitId;
-    }
+  public String getDose() {
+    return dose;
+  }
 
-    public void setVisitType(String visitType) {
-        this.visitType = visitType;
-    }
+  public void setDose(String dose) {
+    this.dose = dose;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public String getDoseUnits() {
+    return doseUnits;
+  }
 
-    public String getVisitId() {
-        return visitId;
-    }
+  public void setDoseUnits(String doseUnits) {
+    this.doseUnits = doseUnits;
+  }
 
-    public String getType() {
-        return type;
-    }
+  public String getFrequency() {
+    return frequency;
+  }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+  public void setFrequency(String frequency) {
+    this.frequency = frequency;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getRoute() {
+    return route;
+  }
 
-    public boolean isVoided() {
-        return voided;
-    }
+  public void setRoute(String route) {
+    this.route = route;
+  }
 
-    public void setVoided(boolean voided) {
-        this.voided = voided;
-    }
+  // public String getDosingInstructions() {
+  //   return dosingInstructions;
+  // }
 
-    public String getOrderId() {
-        return orderId;
-    }
+  // public void setDosingInstructions(String dosingInstructions) {
+  //   this.dosingInstructions = dosingInstructions;
+  // }
 
-    public String getVisitType() {
-        return visitType;
-    }
+  public String getAdministrationInstructions() {
+    return administrationInstructions;
+  }
 
+  public void setAdministrationInstructions(String administrationInstructions) {
+    this.administrationInstructions = administrationInstructions;
+  }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
+  public Integer getNumRefills() {
+    return numRefills;
+  }
 
-    public String getProductId() {
-        return productId;
-    }
+  public void setNumRefills(Integer numRefills) {
+    this.numRefills = numRefills;
+  }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
+  public String getAsNeeded() {
+    return asNeeded;
+  }
 
-    public Double getQuantity() {
-        return quantity;
-    }
+  public void setAsNeeded(String asNeeded) {
+    this.asNeeded = asNeeded;
+  }
 
-    public void setQuantity(Double quantity) {
-        this.quantity = quantity;
-    }
+  public String getDuration() {
+    return duration;
+  }
 
-    public String getQuantityUnits() {
-        return quantityUnits;
-    }
+  public void setDuration(String duration) {
+    this.duration = duration;
+  }
 
-    public void setQuantityUnits(String quantityUnits) {
-        this.quantityUnits = quantityUnits;
-    }
+  public String getDurationUnits() {
+    return durationUnits;
+  }
 
-    public String getProductName() {
-        return productName;
-    }
+  public void setDurationUnits(String durationUnits) {
+    this.durationUnits = durationUnits;
+  }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
+  public String getEncounterId() {
+    return encounterId;
+  }
 
-    public String getAction() {
-        return action;
-    }
+  public void setEncounterId(String encounterId) {
+    this.encounterId = encounterId;
+  }
 
-    public void setAction(String action) {
-        this.action = action;
-    }
+  public void setVisitId(String visitId) {
+    this.visitId = visitId;
+  }
 
-    public Date getDateCreated() {
-        return dateCreated;
-    }
+  public void setVisitType(String visitType) {
+    this.visitType = visitType;
+  }
 
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public String getPreviousOrderId() {
-        return previousOrderId;
-    }
+  public String getVisitId() {
+    return visitId;
+  }
 
-    public void setPreviousOrderId(String previousOrderId) {
-        this.previousOrderId = previousOrderId;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public String getLocationName() { return locationName;}
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    public void setLocationName(String locationName) { this.locationName = locationName; }
+  public String getDescription() {
+    return description;
+  }
 
-    public String getProviderName() {
-        return providerName;
-    }
+  public boolean isVoided() {
+    return voided;
+  }
 
-    public void setProviderName(String providerName) {
-        this.providerName = providerName;
-    }
+  public void setVoided(boolean voided) {
+    this.voided = voided;
+  }
 
-    public String getDispensed() { return dispensed; }
+  public String getOrderId() {
+    return orderId;
+  }
 
-    public void setDispensed(String dispensed) {
-        this.dispensed = dispensed;
-    }
+  public String getVisitType() {
+    return visitType;
+  }
 
-    public String getConceptName() { return conceptName; }
+  public void setOrderId(String orderId) {
+    this.orderId = orderId;
+  }
 
-    public void setConceptName(String conceptName) { this.conceptName = conceptName; }
+  public String getProductId() {
+    return productId;
+  }
+
+  public void setProductId(String productId) {
+    this.productId = productId;
+  }
+
+  public Double getQuantity() {
+    return quantity;
+  }
+
+  public void setQuantity(Double quantity) {
+    this.quantity = quantity;
+  }
+
+  public String getQuantityUnits() {
+    return quantityUnits;
+  }
+
+  public void setQuantityUnits(String quantityUnits) {
+    this.quantityUnits = quantityUnits;
+  }
+
+  public String getProductName() {
+    return productName;
+  }
+
+  public void setProductName(String productName) {
+    this.productName = productName;
+  }
+
+  public String getAction() {
+    return action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
+  }
+
+  public Date getDateCreated() {
+    return dateCreated;
+  }
+
+  public void setDateCreated(Date dateCreated) {
+    this.dateCreated = dateCreated;
+  }
+
+  public String getPreviousOrderId() {
+    return previousOrderId;
+  }
+
+  public void setPreviousOrderId(String previousOrderId) {
+    this.previousOrderId = previousOrderId;
+  }
+
+  public String getLocationName() {
+    return locationName;
+  }
+
+  public void setLocationName(String locationName) {
+    this.locationName = locationName;
+  }
+
+  public String getProviderName() {
+    return providerName;
+  }
+
+  public void setProviderName(String providerName) {
+    this.providerName = providerName;
+  }
+
+  public String getDispensed() {
+    return dispensed;
+  }
+
+  public void setDispensed(String dispensed) {
+    this.dispensed = dispensed;
+  }
+
+  public String getConceptName() {
+    return conceptName;
+  }
+
+  public void setConceptName(String conceptName) {
+    this.conceptName = conceptName;
+  }
 }
-
