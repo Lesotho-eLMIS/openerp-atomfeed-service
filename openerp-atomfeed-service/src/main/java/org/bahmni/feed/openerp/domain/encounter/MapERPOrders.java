@@ -86,13 +86,10 @@ public class MapERPOrders extends OpenMRSEncounterEvent {
       } else if ("Diastolic blood pressure".equalsIgnoreCase(parsedObservation.name)) {
         regVitals.put("diastolic", parsedObservation.value);
       } else if ("Blood Pressure".equalsIgnoreCase(parsedObservation.name) && parsedObservation.value instanceof String) {
-        String[] bpValues = ((String) parsedObservation.value).split(",");
-        if (bpValues.length >= 2) {
-          // Prefer the last two tokens (covers formats with posture prefixes)
-          String systolicVal = bpValues[bpValues.length - 2].trim();
-          String diastolicVal = bpValues[bpValues.length - 1].trim();
-          regVitals.put("systolic", systolicVal);
-          regVitals.put("diastolic", diastolicVal);
+        String[] bpValues = extractBloodPressureValues((String) parsedObservation.value);
+        if (bpValues != null) {
+          regVitals.put("systolic", bpValues[0]);
+          regVitals.put("diastolic", bpValues[1]);
         }
       } else if ("Height (cm)".equalsIgnoreCase(parsedObservation.name)) {
         regVitals.put("height", parsedObservation.value);
@@ -410,6 +407,29 @@ public class MapERPOrders extends OpenMRSEncounterEvent {
       parsedObservation.value = observation.getValue();
     }
     return parsedObservation;
+  }
+
+  private String[] extractBloodPressureValues(String value) {
+    // Extract numeric tokens in order; pick the first two as systolic/diastolic
+    java.util.regex.Matcher matcher = java.util.regex.Pattern
+      .compile("(-?\\d+(?:\\.\\d+)?)")
+      .matcher(value);
+    List<String> numbers = new ArrayList<>();
+    while (matcher.find()) {
+      numbers.add(matcher.group(1));
+    }
+    if (numbers.size() >= 2) {
+      return new String[] { numbers.get(0), numbers.get(1) };
+    }
+    // Fallback: if parsing failed but we still have comma-separated tokens, try last two
+    String[] tokens = value.split(",");
+    if (tokens.length >= 2) {
+      return new String[] {
+        tokens[tokens.length - 2].trim(),
+        tokens[tokens.length - 1].trim()
+      };
+    }
+    return null;
   }
 
   private static class ParsedObservation {
