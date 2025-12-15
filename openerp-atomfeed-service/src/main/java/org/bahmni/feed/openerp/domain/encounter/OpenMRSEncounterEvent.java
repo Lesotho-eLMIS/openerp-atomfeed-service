@@ -4,7 +4,9 @@ import org.bahmni.openerp.web.request.builder.Parameter;
 
 public class OpenMRSEncounterEvent {
     protected Parameter createParameter(String name, String value, String type) {
-        return new Parameter(name, value, type);
+        // Avoid null values that can trigger NPEs during request building/parsing
+        String safeValue = value != null ? value : "";
+        return new Parameter(name, safeValue, type);
     }
 
     protected void validateUrls(String feedUri, String feedUrl) {
