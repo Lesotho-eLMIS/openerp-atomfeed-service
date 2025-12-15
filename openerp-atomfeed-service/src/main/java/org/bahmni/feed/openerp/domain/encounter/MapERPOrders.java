@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ public class MapERPOrders extends OpenMRSEncounterEvent {
 
   private final Boolean isOdoo16;
   private OpenMRSEncounter openMRSEncounter;
+  private List<OpenMRSObservation> regEncounterObservations;
   private OpenMRSVisit openMRSVisit;
   private OpenMRSWebClient openMRSWebClient;
   private OpenERPAtomFeedProperties openERPAtomFeedProperties;
@@ -27,12 +30,17 @@ public class MapERPOrders extends OpenMRSEncounterEvent {
 
   public MapERPOrders(
     OpenMRSEncounter openMRSEncounter,
+    List<OpenMRSObservation> regEncounterObservations,
     OpenMRSVisit openMRSVisit,
     OpenMRSWebClient openMRSWebClient,
     OpenERPAtomFeedProperties openERPAtomFeedProperties,
     Boolean isOdoo16
-  ) {
+    ) {
     this.openMRSEncounter = openMRSEncounter;
+    this.regEncounterObservations =
+      regEncounterObservations != null
+        ? regEncounterObservations
+        : Collections.emptyList();
     this.openMRSVisit = openMRSVisit;
     this.openMRSWebClient = openMRSWebClient;
     this.openERPAtomFeedProperties = openERPAtomFeedProperties;
@@ -56,6 +64,46 @@ public class MapERPOrders extends OpenMRSEncounterEvent {
         openMRSEncounter.getEncounterUuid(),
         "string"
       )
+    );
+
+    //Extract REG Vitals from REG Encounter Observations
+    Map<String, Object> regVitals = new HashMap<>();
+    if (logger.isInfoEnabled()) {
+      logger.info(
+        "REG encounter observations for encounter {}: {}",
+        openMRSEncounter.getEncounterUuid(),
+        formatObservationSummary(regEncounterObservations)
+      );
+    }
+    for (OpenMRSObservation observation : regEncounterObservations) {
+      OpenMRSConcept concept = observation.getConcept();
+      ParsedObservation parsedObservation = parseObservation(observation, concept);
+      if (parsedObservation.name == null) {
+        continue;
+      }
+      if ("Systolic blood pressure".equalsIgnoreCase(parsedObservation.name)) {
+        regVitals.put("systolic", parsedObservation.value);
+      } else if ("Diastolic blood pressure".equalsIgnoreCase(parsedObservation.name)) {
+        regVitals.put("diastolic", parsedObservation.value);
+      } else if ("Blood Pressure".equalsIgnoreCase(parsedObservation.name) && parsedObservation.value instanceof String) {
+        String[] bpValues = extractBloodPressureValues((String) parsedObservation.value);
+        if (bpValues != null) {
+          regVitals.put("systolic", bpValues[0]);
+          regVitals.put("diastolic", bpValues[1]);
+        }
+      } else if ("Height (cm)".equalsIgnoreCase(parsedObservation.name)) {
+        regVitals.put("height", parsedObservation.value);
+      } else if ("Weight (kg)".equalsIgnoreCase(parsedObservation.name)) {
+        regVitals.put("weight", parsedObservation.value);
+      }
+    }
+    logger.info(
+      "Computed reg_vitals payload for encounter {}: {}",
+      openMRSEncounter.getEncounterUuid(),
+      regVitals
+    );
+    parameters.add(
+      createParameter("reg_vitals", ObjectMapperRepository.objectMapper.writeValueAsString(regVitals), "string")
     );
     parameters.add(createParameter("feed_uri", feedURI, "string"));
     parameters.add(createParameter("last_read_entry_id", eventId, "string"));
@@ -314,5 +362,78 @@ public class MapERPOrders extends OpenMRSEncounterEvent {
       }
     }
     return null;
+  }
+
+  private String formatObservationSummary(List<OpenMRSObservation> observations) {
+    if (observations == null || observations.isEmpty()) {
+      return "[]";
+    }
+    List<String> summaries = new ArrayList<>();
+    for (OpenMRSObservation observation : observations) {
+      ParsedObservation parsedObservation = parseObservation(
+        observation,
+        observation.getConcept()
+      );
+      summaries.add(
+        String.format(
+          "%s=%s",
+          parsedObservation.name != null ? parsedObservation.name : "UNKNOWN",
+          parsedObservation.value
+        )
+      );
+    }
+    return summaries.toString();
+  }
+
+  private ParsedObservation parseObservation(
+    OpenMRSObservation observation,
+    OpenMRSConcept concept
+  ) {
+    ParsedObservation parsedObservation = new ParsedObservation();
+    if (concept != null && concept.getName() != null) {
+      parsedObservation.name = concept.getName();
+    }
+    if (parsedObservation.name == null) {
+      String display = observation.getConceptNameToDisplay();
+      if (display != null) {
+        String[] parts = display.split(":", 2);
+        parsedObservation.name = parts[0].trim();
+        if (parts.length > 1) {
+          parsedObservation.value = parts[1].trim();
+        }
+      }
+    }
+    if (parsedObservation.value == null) {
+      parsedObservation.value = observation.getValue();
+    }
+    return parsedObservation;
+  }
+
+  private String[] extractBloodPressureValues(String value) {
+    // Extract numeric tokens in order; pick the first two as systolic/diastolic
+    java.util.regex.Matcher matcher = java.util.regex.Pattern
+      .compile("(-?\\d+(?:\\.\\d+)?)")
+      .matcher(value);
+    List<String> numbers = new ArrayList<>();
+    while (matcher.find()) {
+      numbers.add(matcher.group(1));
+    }
+    if (numbers.size() >= 2) {
+      return new String[] { numbers.get(0), numbers.get(1) };
+    }
+    // Fallback: if parsing failed but we still have comma-separated tokens, try last two
+    String[] tokens = value.split(",");
+    if (tokens.length >= 2) {
+      return new String[] {
+        tokens[tokens.length - 2].trim(),
+        tokens[tokens.length - 1].trim()
+      };
+    }
+    return null;
+  }
+
+  private static class ParsedObservation {
+    String name;
+    Object value;
   }
 }

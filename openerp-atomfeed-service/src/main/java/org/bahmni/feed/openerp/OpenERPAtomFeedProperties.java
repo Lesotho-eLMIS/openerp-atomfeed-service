@@ -61,6 +61,9 @@ public class OpenERPAtomFeedProperties implements OpenERPProperties {
     @Value("${drugorder.uri}")
     private String drugOrderUri;
 
+    @Value("${regEncounterTypeUuid}")
+    private String regEncounterTypeUuid;
+
     public String getFeedUriForJob(Jobs feedJob) {
         switch (feedJob){
             case CUSTOMER_FEED: return customFeedUri;
@@ -208,6 +211,10 @@ public class OpenERPAtomFeedProperties implements OpenERPProperties {
         return refDataEndPt;
     }
 
+    public String getRegEncounterTypeUuid(){
+        return regEncounterTypeUuid;
+    }
+
 
     @PostConstruct
     private void debug() {
@@ -246,6 +253,7 @@ public class OpenERPAtomFeedProperties implements OpenERPProperties {
         values.put("openmrs.user",openmrsUser );
         values.put("referencedata.endpoint",refDataEndPt);
         values.put("saleable.feed.generator.uri", saleableFeedUri);
+        values.put("regEncounterTypeUuid", regEncounterTypeUuid);
         return values;
     }
 

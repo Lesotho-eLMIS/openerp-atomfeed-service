@@ -7,6 +7,7 @@ import org.bahmni.feed.openerp.ObjectMapperRepository;
 import org.bahmni.feed.openerp.client.OpenMRSWebClient;
 import org.bahmni.feed.openerp.domain.encounter.MapERPOrders;
 import org.bahmni.feed.openerp.domain.encounter.OpenMRSEncounter;
+import org.bahmni.feed.openerp.domain.encounter.OpenMRSObservation;
 import org.bahmni.feed.openerp.domain.visit.OpenMRSVisit;
 import org.bahmni.openerp.web.client.strategy.OpenERPContext;
 import org.bahmni.openerp.web.request.OpenERPRequest;
@@ -16,6 +17,8 @@ import org.ict4h.atomfeed.client.service.EventWorker;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 public class OpenERPSaleOrderEventWorker implements EventWorker {
     private final Boolean isOdoo16;
@@ -66,9 +69,25 @@ public class OpenERPSaleOrderEventWorker implements EventWorker {
 
         String visitURL = "/openmrs/ws/rest/v1/visit/" + openMRSEncounter.getVisitUuid() + "?v=full";
         String visitContent = webClient.get(URI.create(urlPrefix + visitURL));
-
         OpenMRSVisit openMRSVisit = ObjectMapperRepository.objectMapper.readValue(visitContent, OpenMRSVisit.class);
-        MapERPOrders mapERPOrders = new MapERPOrders(openMRSEncounter, openMRSVisit, webClient, openERPAtomFeedProperties, isOdoo16);
+
+        String regEncounterTypeUuid = openERPAtomFeedProperties.getRegEncounterTypeUuid();
+        List<OpenMRSObservation> regObservations = Collections.emptyList();
+        if (openMRSVisit.getEncounters() != null) {
+            regObservations = openMRSVisit.getEncounters().stream()
+                    .filter(e -> e.getEncounterType() != null && regEncounterTypeUuid.equals(e.getEncounterType().getUuid()))
+                    .findFirst()
+                    .map(OpenMRSVisit.Encounter::getObs)
+                    .orElse(Collections.emptyList());
+        }
+        logger.info(
+                "Resolved REG encounter observations for visit {} (encounter {}, regEncounterTypeUuid={}): count={}",
+                openMRSEncounter.getVisitUuid(),
+                openMRSEncounter.getEncounterUuid(),
+                regEncounterTypeUuid,
+                regObservations.size());
+
+        MapERPOrders mapERPOrders = new MapERPOrders(openMRSEncounter, regObservations, openMRSVisit, webClient, openERPAtomFeedProperties, isOdoo16);
 
         OpenERPRequest erpRequest = new OpenERPRequest("atom.event.worker", "process_event", mapERPOrders.getParameters(event.getId(), event.getFeedUri(), feedUrl));
         if (event.getFeedUri() == null)

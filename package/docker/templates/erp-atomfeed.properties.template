@@ -31,6 +31,8 @@ drugorder.uri=http://${OPENMRS_HOST}:${OPENMRS_PORT}/openmrs/ws/rest/v1/bahmnico
 
 chunking.strategy=number
 
+regEncounterTypeUuid=${REG_ENCOUNTER_TYPE_UUID:d352e230-5e07-11ef-8f7c-0242ac120002}
+
 openerp.port=${ODOO_PORT}
 openerp.host=${ODOO_HOST}
 openerp.database=${ODOO_DB_NAME}
